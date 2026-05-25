@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Max Glaser — AI Concierge</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&family=Sora:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --bg-solid:#070912;
+  --surf:#0e1625;
+  --surf2:#131e30;
+  --surf3:#19273c;
+  --accent:#22d3ee;
+  --accent2:#6366f1;
+  --text:#dce8ff;
+  --text-muted:#7a93b4;
+  --text-dim:#3d5270;
+  --border:rgba(255,255,255,0.06);
+  --border-a:rgba(34,211,238,0.18);
+  --r:12px;
+  --r-sm:8px;
+}
+html,body{height:100%;background:var(--bg-solid);}
+body{font-family:'Sora',sans-serif;color:var(--text);font-size:14px;line-height:1.65;display:flex;flex-direction:column;overflow:hidden;}
+
+.hdr{padding:1.25rem 1.75rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;background:var(--bg-solid);flex-shrink:0;}
+.hdr-left{display:flex;align-items:center;gap:14px;}
+.live-pill{display:flex;align-items:center;gap:6px;background:rgba(34,211,238,0.08);border:1px solid rgba(34,211,238,0.22);color:var(--accent);font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;padding:4px 10px;border-radius:20px;}
+.live-dot{width:6px;height:6px;border-radius:50%;background:var(--accent);animation:blink 2s ease-in-out infinite;}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:.35;}}
+.name-display{font-family:'Cormorant Garamond',serif;font-size:1.65rem;font-weight:500;letter-spacing:-.01em;color:var(--text);line-height:1;}
+.name-display em{font-style:italic;color:var(--accent);}
+.hdr-sub{font-size:11px;color:var(--text-muted);font-weight:300;margin-top:2px;}
+.hdr-right{display:flex;gap:10px;align-items:center;}
+.hdr-link{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text-muted);text-decoration:none;background:var(--surf2);border:1px solid var(--border);padding:5px 10px;border-radius:20px;transition:border-color .2s,color .2s;}
+.hdr-link:hover{color:var(--accent);border-color:var(--border-a);}
+.hdr-link svg{width:12px;height:12px;fill:currentColor;}
+
+.layout{display:flex;flex:1;overflow:hidden;min-height:0;}
+
+.sidebar{width:280px;flex-shrink:0;border-right:1px solid var(--border);display:flex;flex-direction:column;overflow-y:auto;overflow-x:hidden;background:var(--bg-solid);}
+.sidebar::-webkit-scrollbar{width:3px;}
+.sidebar::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
+.sb-section{padding:1.25rem 1.25rem .5rem;}
+.sb-label{font-size:9px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--text-dim);margin-bottom:.75rem;}
+
+.video-box{margin:0 1.25rem;border-radius:var(--r);border:1px solid var(--border);background:var(--surf2);aspect-ratio:16/9;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;cursor:pointer;transition:border-color .2s;position:relative;overflow:hidden;}
+.video-box:hover{border-color:var(--border-a);}
+.video-overlay{position:absolute;inset:0;background:linear-gradient(135deg,rgba(99,102,241,.07) 0%,rgba(34,211,238,.04) 100%);}
+.play-ring{width:42px;height:42px;border-radius:50%;border:1.5px solid rgba(34,211,238,.4);background:rgba(34,211,238,.1);display:flex;align-items:center;justify-content:center;transition:transform .2s,background .2s;z-index:1;}
+.video-box:hover .play-ring{transform:scale(1.08);background:rgba(34,211,238,.18);}
+.play-ring svg{width:14px;height:14px;fill:var(--accent);margin-left:3px;}
+.video-txt{z-index:1;text-align:center;}
+.video-txt strong{display:block;font-size:11px;font-weight:500;color:var(--text-muted);}
+.video-txt span{font-size:10px;color:var(--text-dim);}
+
+.bio-box{margin:0 1.25rem;background:var(--surf2);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;font-size:11.5px;color:var(--text-muted);line-height:1.7;}
+
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin:0 1.25rem;}
+.stat{background:var(--surf2);border:1px solid var(--border);border-radius:var(--r-sm);padding:10px 12px;}
+.stat-n{font-family:'Cormorant Garamond',serif;font-size:1.5rem;font-weight:500;color:var(--accent);line-height:1;margin-bottom:3px;}
+.stat-l{font-size:10px;color:var(--text-muted);line-height:1.3;}
+
+.sb-section.qs{padding-top:1rem;padding-bottom:1rem;}
+.qs-list{display:flex;flex-direction:column;gap:5px;}
+.q-chip{width:100%;text-align:left;background:var(--surf2);border:1px solid var(--border);border-radius:var(--r-sm);padding:7px 10px;font-size:11.5px;color:var(--text-muted);cursor:pointer;transition:all .15s;font-family:'Sora',sans-serif;line-height:1.4;}
+.q-chip:hover{border-color:var(--border-a);color:var(--text);background:var(--surf3);}
+.q-chip::before{content:'→ ';opacity:.45;font-size:10px;}
+
+.chat{display:flex;flex-direction:column;flex:1;overflow:hidden;min-width:0;}
+.messages{flex:1;overflow-y:auto;padding:1.5rem;display:flex;flex-direction:column;gap:1.1rem;scroll-behavior:smooth;}
+.messages::-webkit-scrollbar{width:4px;}
+.messages::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px;}
+
+.welcome{background:var(--surf);border:1px solid var(--border-a);border-radius:var(--r);padding:1.25rem;display:flex;gap:12px;}
+.av{width:34px;height:34px;border-radius:50%;flex-shrink:0;background:linear-gradient(135deg,var(--accent2),var(--accent));display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:13px;font-weight:500;color:#fff;}
+.welcome p{font-size:13.5px;color:var(--text-muted);line-height:1.7;}
+.welcome p strong{color:var(--text);font-weight:500;}
+
+.msg{display:flex;gap:10px;animation:pop .22s ease;}
+@keyframes pop{from{opacity:0;transform:translateY(7px);}to{opacity:1;transform:translateY(0);}}
+.msg.user{flex-direction:row-reverse;}
+.msg-av{width:30px;height:30px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:500;}
+.msg-av.b{background:linear-gradient(135deg,var(--accent2),var(--accent));color:#fff;font-family:'Cormorant Garamond',serif;font-size:12px;}
+.msg-av.u{background:var(--surf3);border:1px solid var(--border);color:var(--text-muted);}
+.bubble{max-width:78%;padding:9px 13px;border-radius:14px;font-size:13.5px;line-height:1.7;}
+.msg.bot .bubble{background:var(--surf2);border:1px solid var(--border);border-bottom-left-radius:3px;color:var(--text);}
+.msg.user .bubble{background:rgba(34,211,238,.08);border:1px solid rgba(34,211,238,.18);border-bottom-right-radius:3px;color:var(--text);}
+.typing{display:flex;gap:4px;align-items:center;padding:12px 0 4px 42px;}
+.td{width:6px;height:6px;border-radius:50%;background:var(--text-dim);animation:tdot 1.2s ease-in-out infinite;}
+.td:nth-child(2){animation-delay:.2s;}.td:nth-child(3){animation-delay:.4s;}
+@keyframes tdot{0%,80%,100%{opacity:.3;transform:scale(.75);}40%{opacity:1;transform:scale(1);}}
+
+.input-area{padding:.9rem 1.5rem 1.25rem;border-top:1px solid var(--border);background:var(--bg-solid);flex-shrink:0;}
+.input-wrap{display:flex;align-items:flex-end;gap:8px;background:var(--surf);border:1px solid var(--border);border-radius:16px;padding:8px 8px 8px 14px;transition:border-color .2s;}
+.input-wrap:focus-within{border-color:rgba(34,211,238,.35);}
+textarea.ti{flex:1;background:none;border:none;outline:none;resize:none;font-family:'Sora',sans-serif;font-size:13.5px;color:var(--text);line-height:1.5;min-height:22px;max-height:100px;padding:3px 0;}
+textarea.ti::placeholder{color:var(--text-dim);}
+.send{width:34px;height:34px;border-radius:9px;background:var(--accent);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:opacity .2s,transform .15s;}
+.send:hover{opacity:.82;transform:scale(1.05);}
+.send:active{transform:scale(.95);}
+.send:disabled{opacity:.35;cursor:not-allowed;transform:none;}
+.send svg{width:15px;height:15px;fill:#000;}
+.hint{font-size:10px;color:var(--text-dim);text-align:center;margin-top:7px;}
+
+@media(max-width:640px){
+  .layout{flex-direction:column;}
+  .sidebar{width:100%;border-right:none;border-bottom:1px solid var(--border);max-height:260px;}
+  .stats{grid-template-columns:repeat(4,1fr);}
+}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div class="hdr-left">
+    <div class="live-pill"><div class="live-dot"></div>Live</div>
+    <div>
+      <div class="name-display">Max <em>Glaser</em></div>
+      <div class="hdr-sub">Finance &amp; Data Analysis · Reichman University · Herzliya, Israel</div>
+    </div>
+  </div>
+  <div class="hdr-right">
+    <a href="https://www.linkedin.com/in/max--glaser/" target="_blank" class="hdr-link">
+      <svg viewBox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+      LinkedIn
+    </a>
+    <a href="mailto:maxglaser@me.com" class="hdr-link">
+      <svg viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+      Email
+    </a>
+  </div>
+</div>
+
+<div class="layout">
+  <div class="sidebar">
+
+    <div class="sb-section" style="padding-bottom:.6rem;">
+      <div class="sb-label">Introduction</div>
+    </div>
+    <div class="video-box" id="videoBox" onclick="handleVideo()">
+      <div class="video-overlay"></div>
+      <div class="play-ring">
+        <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+      </div>
+      <div class="video-txt">
+        <strong>Elevator Pitch</strong>
+        <span>Coming soon</span>
+      </div>
+    </div>
+
+    <div style="height:.75rem;"></div>
+    <div class="bio-box">
+      Business Administration student at Reichman University with a specialisation in Finance and Data Analysis. Strong interest in financial markets, securities trading, and investment banking. I actively use AI tools to accelerate research and deliver stronger results. I bring hands-on experience in client management, negotiation, and performing under pressure — backed by a military background that sharpened my teamwork and communication.
+    </div>
+
+    <div class="sb-section" style="padding-top:1.25rem;padding-bottom:.75rem;">
+      <div class="sb-label">By the numbers</div>
+    </div>
+    <div class="stats">
+      <div class="stat"><div class="stat-n">500+</div><div class="stat-l">Clients onboarded at Saxo Bank</div></div>
+      <div class="stat"><div class="stat-n">4</div><div class="stat-l">Languages spoken fluently</div></div>
+      <div class="stat"><div class="stat-n">1M</div><div class="stat-l">CHF in deposits managed</div></div>
+      <div class="stat"><div class="stat-n">2nd</div><div class="stat-l">Year BA at Reichman</div></div>
+    </div>
+
+    <div class="sb-section qs">
+      <div class="sb-label">Suggested questions</div>
+      <div class="qs-list">
+        <button class="q-chip" onclick="sendChip(this.dataset.q)" data-q="What makes you stand out from other candidates?">What makes you stand out?</button>
+        <button class="q-chip" onclick="sendChip(this.dataset.q)" data-q="Tell me about your experience at Saxo Bank.">Your experience at Saxo Bank?</button>
+        <button class="q-chip" onclick="sendChip(this.dataset.q)" data-q="Tell me about a hard challenge you had to overcome.">A hard challenge you overcame?</button>
+        <button class="q-chip" onclick="sendChip(this.dataset.q)" data-q="Can you give me an example of how you work in a team?">How do you work in a team?</button>
+        <button class="q-chip" onclick="sendChip(this.dataset.q)" data-q="Can you give me an example of analytical work you have done?">Example of analytical work?</button>
+        <button class="q-chip" onclick="sendChip(this.dataset.q)" data-q="What are your core values and working style?">Core values &amp; working style?</button>
+        <button class="q-chip" onclick="sendChip(this.dataset.q)" data-q="What technical and AI skills do you have?">Technical &amp; AI skills?</button>
+        <button class="q-chip" onclick="sendChip(this.dataset.q)" data-q="Tell me about your military service and what it taught you.">Military background?</button>
+        <button class="q-chip" onclick="sendChip(this.dataset.q)" data-q="What projects have you built recently?">Recent projects?</button>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="chat">
+    <div class="messages" id="msgs">
+      <div class="welcome">
+        <div class="av">M</div>
+        <p>
+          <strong>Hi, I'm Max Glaser — welcome to my interactive profile.</strong> Instead of sending a cold email and waiting for a reply, you can get to know me right here and now. Ask me anything — about my background, experience, skills, values, or how I work. I'll answer just as I would in a real conversation. Use the suggested questions on the left to get started, or type your own below.
+        </p>
+      </div>
+    </div>
+    <div class="input-area">
+      <div class="input-wrap">
+        <textarea class="ti" id="inp" rows="1" placeholder="Ask anything about Max…" onkeydown="handleKey(event)" oninput="autoGrow(this)"></textarea>
+        <button class="send" id="sendBtn" onclick="send()" title="Send">
+          <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+        </button>
+      </div>
+      <div class="hint">Powered by Claude · Built by Max as a demonstration of his practical AI skills</div>
+    </div>
+  </div>
+</div>
+
+<script>
+const SYSTEM = `You are Max Glaser, speaking in first person to recruiters and professionals curious about you. Be warm, confident, and genuine — not robotic or overly formal. Keep most answers to 2–4 sentences unless the question is detailed or multi-part.
+
+PROFILE:
+Name: Max Glaser
+Location: Herzliya, Israel
+Email: maxglaser@me.com
+LinkedIn: https://www.linkedin.com/in/max--glaser/
+Languages: Dutch (native), English (fluent), German (fluent), Hebrew (fluent)
+
+EDUCATION:
+BA Business Administration — Reichman University, Arison School of Business (2024–2027)
+Specialisation: Finance and Data Analysis
+Completed modules: Fundamentals of Finance, Investment Theory, Accounting, Statistics, Excel, Micro & Macro Economics, High-Tech Product Management, Python
+Currently studying: Quantitative Methods in Finance, Company Valuations & Financial Statement Analysis, Data Science, UI/UX – Designing Digital Products
+
+EXPERIENCE:
+Saxo Bank, Amsterdam (2024) — Client Acquisition & Relationship Associate (promoted from Customer Service Rep within 2 months)
+- Acquired and onboarded 500+ new clients in just 4 months for the Swiss entity
+- Managed client deposits up to 1M CHF
+- Explained Saxo's full securities platform to new clients, deepening my own markets knowledge
+- Used CRM, Pipeline, KYC, and Backoffice tools daily
+
+Military Service — Paratroopers Brigade, Israel (2022–2023), Lone Soldier
+- Served as a lone soldier — no family in Israel, navigated everything independently
+- Learned Hebrew from zero in order to serve in a Hebrew-speaking unit
+- Built resilience, composure under pressure, leadership, and teamwork
+
+Shop Manager — Pizza and Co, Amsterdam (2021)
+- Ran daily operations of a 200+ customer/day restaurant
+- Managed and coordinated a full team
+
+TECHNICAL SKILLS:
+Python & Pandas (EDA, data cleaning, data visualisation), Excel, CRM/Pipeline/KYC/Backoffice, basic SQL
+AI Tools in practice: Claude, Claude Code, ChatGPT, NotebookLM — used to accelerate research, structure financial analysis, improve professional writing, and build real applications
+
+PROJECTS:
+Movies EDA: Full exploratory data analysis on a movies dataset — data cleaning, visualisation, pattern recognition, and an interactive website to present results.
+Personal Expense Tracker: Python app with a live currency API + LLM integration to track expenses, convert currencies to EUR, and generate AI-powered spending recommendations.
+This chatbot: Built an AI-powered personal concierge using the Anthropic API — demonstrates ability to design, prompt, and ship a complete AI product independently.
+
+CHALLENGE STORY — use this when asked about overcoming a hard challenge, resilience, pressure, or mental strength:
+Towards the end of my army training, I had one last chance to pass a critical physical test — pull-ups with a weighted vest — in front of the battalion commander himself. He told me straight to my face: if I didn't pass, eight months of training would have meant nothing and I'd never be a combat soldier. I was nervous, genuinely scared, and starting to doubt myself. Then something shifted. I thought: I don't care who's standing next to me — I came here to defend my country and I'm going to pass this. I closed my eyes, took a breath, and went for it. I didn't just hit the minimum — I did one more pull-up than required. That moment taught me that as long as I believe in myself and give everything I have, no challenge is too big. I carry that with me into everything I do.
+
+TEAMWORK STORY — use this when asked about teamwork, collaboration, leadership in a group, or working under time pressure:
+In one of my university classes, the teacher gave us 20 minutes to prepare and present material we had just covered — no warning, four people per group. It was stressful because we first needed to understand the content and then figure out how to present it well. I took the lead and suggested a clear structure: each person takes their own section and prepares their slides for 15 minutes, using the material and AI tools where helpful, then we come together for the last 5 minutes to align, connect the slides, and make sure it flows as one coherent presentation. We pulled it off within the time limit and the teacher specifically praised our presentation. For me that's how good teamwork works — clear structure, trust in each person to deliver, and a sharp finish together.
+
+ANALYTICAL WORK STORY — use this when asked about analytical skills, data-driven thinking, or examples of analysis:
+At Saxo Bank I was managing a growing book of clients across multiple systems simultaneously — CRM, Pipeline, and Back-office — all at once. Before reaching out to any client by phone or email, I'd analyse their profile: what details the company had on them, how much genuine interest they seemed to have, and what approach would most likely resonate with them. I developed a consistent method for this, and it's what allowed me to onboard 500+ clients in four months. That experience taught me something I now apply everywhere: analysis isn't just about reading numbers — it's about turning information into a decision and acting on it.
+
+VALUES & CHARACTER:
+- I fully commit to every challenge — lone soldier, 500 clients in 4 months, building AI tools from scratch.
+- I'm a self-starter. I don't wait to be directed; I find the problem and solve it.
+- I thrive under pressure — proven in military service and in a fast-moving financial services environment.
+- I see AI as a multiplier, not a shortcut — a way to deliver sharper, faster, higher-quality work.
+- I value integrity, genuine relationships, and always exceeding expectations.
+- I'm genuinely passionate about financial markets, technology, and where they intersect.
+- I adapt fast — going from customer service to managing 1M CHF deposits in two months is a good example of that.
+
+WHAT MAKES ME UNUSUAL:
+Most candidates my age have one of: banking experience, technical skills, or multilingual ability. I have all three — plus military discipline and a track record of performing under pressure in real environments, not just classrooms.
+
+COMPANY FIT:
+I'm a strong fit for fintech startups, investment banks, trading platforms, capital markets roles, and data-heavy finance teams. If someone asks whether I'd fit their specific company, ask one short follow-up question about what the company does or what they value in a hire — then give a tailored answer.
+
+RULES:
+- Always speak in first person as Max.
+- Never invent facts, numbers, or dates not listed above.
+- If genuinely unsure about something specific, say: "That's a great question — I'd love to cover it properly over email or a call. Reach me at maxglaser@me.com."
+- Be human. Avoid bullet-heavy answers unless a list is clearly what's needed.
+- Do not break character or mention you are an AI unless the person sincerely and directly asks.`;
+
+let history = [];
+let busy = false;
+
+function autoGrow(el){
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 100) + 'px';
+}
+
+function handleKey(e){
+  if(e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); send(); }
+}
+
+function sendChip(q){
+  document.getElementById('inp').value = q;
+  send();
+}
+
+function handleVideo(){
+  alert('Video coming soon!');
+}
+
+function esc(s){
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+}
+
+function addMsg(role, text){
+  const msgs = document.getElementById('msgs');
+  const d = document.createElement('div');
+  d.className = 'msg ' + (role === 'assistant' ? 'bot' : 'user');
+  const bot = role === 'assistant';
+  d.innerHTML = `<div class="msg-av ${bot?'b':'u'}">${bot?'M':'You'}</div><div class="bubble">${esc(text)}</div>`;
+  msgs.appendChild(d);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function showTyping(){
+  const msgs = document.getElementById('msgs');
+  const d = document.createElement('div');
+  d.id = 'typing'; d.className = 'typing';
+  d.innerHTML = '<div class="td"></div><div class="td"></div><div class="td"></div>';
+  msgs.appendChild(d);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function removeTyping(){
+  const t = document.getElementById('typing');
+  if(t) t.remove();
+}
+
+async function send(){
+  if(busy) return;
+  const inp = document.getElementById('inp');
+  const text = inp.value.trim();
+  if(!text) return;
+  inp.value = '';
+  inp.style.height = 'auto';
+
+  addMsg('user', text);
+  history.push({ role: 'user', content: text });
+
+  busy = true;
+  document.getElementById('sendBtn').disabled = true;
+  showTyping();
+
+  try {
+    const res = await fetch('/.netlify/functions/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        system: SYSTEM,
+        messages: history
+      })
+    });
+    const data = await res.json();
+    removeTyping();
+    const reply = data.content && data.content[0]
+      ? data.content[0].text
+      : "Having a bit of trouble right now — reach Max directly at maxglaser@me.com.";
+    addMsg('assistant', reply);
+    history.push({ role: 'assistant', content: reply });
+  } catch(err) {
+    removeTyping();
+    addMsg('assistant', "Connection issue — feel free to reach Max at maxglaser@me.com or on LinkedIn.");
+    history.push({ role: 'assistant', content: "Connection issue — feel free to reach Max at maxglaser@me.com or on LinkedIn." });
+  } finally {
+    busy = false;
+    document.getElementById('sendBtn').disabled = false;
+  }
+}
+</script>
+</body>
+</html>
